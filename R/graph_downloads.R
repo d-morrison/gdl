@@ -19,11 +19,9 @@
 #' `github_repo` is set), listed under `Suggests`.
 #'
 #' @examples
-#' \dontrun{
 #' graph_downloads("dplyr")
 #' graph_downloads("dplyr", github_repo = "tidyverse/dplyr")
 #' graph_downloads("dplyr", unit = "week", start = "2024-01-01")
-#' }
 #'
 #' @export
 graph_downloads <- function(package, ...) {
