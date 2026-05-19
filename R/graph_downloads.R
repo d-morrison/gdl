@@ -18,7 +18,7 @@
 #' Requires the `packageRank` package (and `gh` if
 #' `github_repo` is set), listed under `Suggests`.
 #'
-#' @examplesIf interactive() || identical(Sys.getenv("CI"), "true")
+#' @examplesIf interactive() || nzchar(Sys.getenv("GDL_DOCS_BUILD"))
 #' graph_downloads("dplyr")
 #' graph_downloads("dplyr", github_repo = "tidyverse/dplyr")
 #' graph_downloads("dplyr", unit = "week", start = "2024-01-01")

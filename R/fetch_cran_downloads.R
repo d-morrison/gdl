@@ -43,7 +43,14 @@
   if (is.null(from)) {
     first_release <- .cran_first_release_date(package)
     from <- if (!is.null(start)) {
-      max(first_release, as.Date(start))
+      start_date <- as.Date(start)
+      if (is.na(start_date)) {
+        cli::cli_abort(c(
+          "{.arg start} could not be coerced to a Date.",
+          x = "Got {.val {start}}."
+        ))
+      }
+      max(first_release, start_date)
     } else {
       first_release
     }
@@ -65,12 +72,18 @@
     packageRank::packageHistory(package),
     error = function(e) NULL
   )
-  if (is.null(history) || nrow(history) == 0L) {
+  dates <- if (is.null(history) || nrow(history) == 0L) {
+    as.Date(character())
+  } else {
+    as.Date(history$Date)
+  }
+  dates <- dates[!is.na(dates)]
+  if (length(dates) == 0L) {
     cli::cli_warn(c(
       "Could not look up CRAN release history for {.pkg {package}}.",
       i = "Falling back to one year of download data."
     ))
     return(Sys.Date() - 365L)
   }
-  min(as.Date(history$Date), na.rm = TRUE)
+  min(dates)
 }
