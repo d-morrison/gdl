@@ -127,3 +127,19 @@ test_that(
       expect_error()
   }
 )
+
+test_that(
+  desc = "graph_downloads() errors on invalid start date",
+  code = {
+    graph_downloads("dplyr", start = "not-a-date") |>
+      expect_error(regexp = "could not be coerced to a Date")
+  }
+)
+
+test_that(
+  desc = "graph_downloads() errors on invalid unit",
+  code = {
+    graph_downloads("dplyr", unit = "fortnight") |>
+      expect_error()
+  }
+)

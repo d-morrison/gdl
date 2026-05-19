@@ -2,8 +2,10 @@
 
 * Fixed gh-pages site root returning 404 before the first stable release: dev
   deploys now drop a small `index.html` redirect at the root pointing to `/dev/`.
-* `graph_downloads()` examples now render output in CI doc builds (altdoc) while
-  skipping in offline R CMD check (`@examplesIf interactive() || CI`).
+* `graph_downloads()` examples now render output in altdoc docs builds while
+  skipping in offline R CMD check. Gated on a docs-only env var
+  (`@examplesIf interactive() || nzchar(Sys.getenv("GDL_DOCS_BUILD"))`),
+  which the docs workflow sets but R-CMD-check does not.
 * `.fetch_cran_downloads()` now accepts a `start` hint so only the requested
   date range is fetched from CRAN, avoiding a full-history download when a
   bounded `start` date is supplied.

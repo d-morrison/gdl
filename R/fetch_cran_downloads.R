@@ -43,14 +43,9 @@
   if (is.null(from)) {
     first_release <- .cran_first_release_date(package)
     from <- if (!is.null(start)) {
-      start_date <- as.Date(start)
-      if (is.na(start_date)) {
-        cli::cli_abort(c(
-          "{.arg start} could not be coerced to a Date.",
-          x = "Got {.val {start}}."
-        ))
-      }
-      max(first_release, start_date)
+      # Caller (.get_download_data) has already coerced `start` to a
+      # valid Date if non-NULL.
+      max(first_release, start)
     } else {
       first_release
     }

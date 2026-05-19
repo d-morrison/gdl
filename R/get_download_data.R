@@ -48,6 +48,24 @@
 
   unit <- unit |> rlang::arg_match()
 
+  # Coerce + validate `start` once here so both .fetch_cran_downloads()
+  # (which uses it as a fetch lower-bound) and .prepare_download_data()
+  # (which uses it to post-filter the combined CRAN+GitHub frame) see
+  # the same validated Date. Without this, an invalid `start` silently
+  # filters every row out downstream. as.Date() can either error
+  # (character without a recognized format) or return NA (e.g. from
+  # NA input), so handle both.
+  if (!is.null(start)) {
+    start_in <- start
+    start <- tryCatch(as.Date(start), error = function(e) NULL)
+    if (is.null(start) || is.na(start)) {
+      cli::cli_abort(c(
+        "{.arg start} could not be coerced to a Date.",
+        x = "Got {.val {start_in}}."
+      ))
+    }
+  }
+
   # `start` is passed in twice: here to bound the actual CRAN fetch,
   # and in .prepare_download_data() to post-filter both sources. The
   # post-filter is a no-op for CRAN once we pass `start` here, but
