@@ -26,7 +26,11 @@
 #'   and `cumulative`.
 #'
 #' @keywords internal
-.fetch_cran_downloads <- function(package, unit, from = NULL, to = NULL, start = NULL, ...) {
+.fetch_cran_downloads <- function(
+  package, unit,
+  from = NULL, to = NULL, start = NULL,
+  ...
+) {
   if (!requireNamespace("packageRank", quietly = TRUE)) {
     msg <- paste(
       "Package {.pkg packageRank} is required.",
