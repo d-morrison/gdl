@@ -171,6 +171,37 @@ jobs:
           folder: docs
           target-folder: ${{ github.ref_name }}
 
+      # When deploying dev docs, also drop a redirect at the site root so
+      # https://<owner>.github.io/<repo>/ resolves to /dev/ until the first
+      # release publishes stable docs at root (which will then overwrite this).
+      - name: "[dev] Build root redirect to /dev/"
+        if: github.event_name != 'pull_request' && env.subdir == 'dev'
+        run: |
+          mkdir -p root-redirect
+          cat > root-redirect/index.html <<'EOF'
+          <!doctype html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <title>Redirecting to development docs</title>
+            <meta http-equiv="refresh" content="0; url=./dev/">
+            <link rel="canonical" href="./dev/">
+          </head>
+          <body>
+            Redirecting to <a href="./dev/">./dev/</a>…
+          </body>
+          </html>
+          EOF
+
+      - name: "[dev] Deploy root redirect"
+        if: github.event_name != 'pull_request' && env.subdir == 'dev'
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          clean: false
+          branch: gh-pages
+          folder: root-redirect
+          target-folder: ""
+
       - name: Deploy PR Preview
         id: preview-step
         if: github.event_name == 'pull_request'
