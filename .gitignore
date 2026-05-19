@@ -1,0 +1,17 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+.httr-oauth
+.DS_Store
+inst/doc
+/doc/
+/Meta/
+docs
+gdl.Rcheck/
+gdl*.tar.gz
+gdl*.tgz
+README.html
+*.Rout.save
+*.Rout
+.claude

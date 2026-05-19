@@ -1,0 +1,37 @@
+Package: gdl
+Title: Graph Package Download Counts
+Version: 0.0.0.9000
+Authors@R:
+    person("Douglas Ezra", "Morrison", , "demorrison@ucdavis.edu", role = c("aut", "cre"))
+Description: Plot new and cumulative download counts for an R package
+    over time, combining CRAN download data (via the packageRank
+    package) with optional GitHub Releases asset-download counts.
+    Supports configurable time-unit aggregation and start-date
+    filtering, and exposes the data layer via a custom S3 class with
+    an autoplot() method.
+License: MIT + file LICENSE
+URL: https://github.com/d-morrison/gdl, https://d-morrison.github.io/gdl/
+BugReports: https://github.com/d-morrison/gdl/issues
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+Language: en-US
+Depends:
+    R (>= 4.1.0)
+Imports:
+    cli,
+    dplyr,
+    ggplot2,
+    purrr,
+    rlang,
+    scales,
+    tibble,
+    tidyr
+Suggests:
+    gh,
+    packageRank,
+    spelling,
+    testthat (>= 3.0.0),
+    vdiffr,
+    withr
+Config/testthat/edition: 3
+Config/roxygen2/version: 8.0.0
