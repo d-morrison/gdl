@@ -48,6 +48,10 @@
 
   unit <- unit |> rlang::arg_match()
 
+  # `start` is passed in twice: here to bound the actual CRAN fetch,
+  # and in .prepare_download_data() to post-filter both sources. The
+  # post-filter is a no-op for CRAN once we pass `start` here, but
+  # still filters the GitHub side (which fetches all releases).
   cran_data <- .fetch_cran_downloads(package, unit, start = start, ...)
   github_data <- if (!is.null(github_repo)) {
     .fetch_github_downloads(github_repo, unit)

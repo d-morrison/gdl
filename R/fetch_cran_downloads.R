@@ -66,6 +66,10 @@
     error = function(e) NULL
   )
   if (is.null(history) || nrow(history) == 0L) {
+    cli::cli_warn(c(
+      "Could not look up CRAN release history for {.pkg {package}}.",
+      i = "Falling back to one year of download data."
+    ))
     return(Sys.Date() - 365L)
   }
   min(as.Date(history$Date), na.rm = TRUE)

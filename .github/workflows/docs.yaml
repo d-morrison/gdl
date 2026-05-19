@@ -193,6 +193,11 @@ jobs:
           </html>
           EOF
 
+      # clean: false here is intentional and asymmetric with the deploy
+      # above (which uses clean: true + clean-exclude). This step writes
+      # only `/index.html` and must NOT wipe `dev/`, `pr-preview/`, or
+      # `v*/` trees that the previous step (or PR previews) just wrote.
+      # A release deploy later overwrites this redirect with stable docs.
       - name: "[dev] Deploy root redirect"
         if: github.event_name != 'pull_request' && env.subdir == 'dev'
         uses: JamesIves/github-pages-deploy-action@v4
