@@ -48,7 +48,7 @@
 
   unit <- unit |> rlang::arg_match()
 
-  cran_data <- .fetch_cran_downloads(package, unit, ...)
+  cran_data <- .fetch_cran_downloads(package, unit, start = start, ...)
   github_data <- if (!is.null(github_repo)) {
     .fetch_github_downloads(github_repo, unit)
   }

@@ -48,8 +48,9 @@ Requires the \code{packageRank} package (and \code{gh} if
 \code{github_repo} is set), listed under \code{Suggests}.
 }
 \examples{
+\dontshow{if (interactive() || identical(Sys.getenv("CI"), "true")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 graph_downloads("dplyr")
 graph_downloads("dplyr", github_repo = "tidyverse/dplyr")
 graph_downloads("dplyr", unit = "week", start = "2024-01-01")
-
+\dontshow{\}) # examplesIf}
 }

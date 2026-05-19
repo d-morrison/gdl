@@ -10,9 +10,15 @@
 #' @param from,to Date range passed to
 #'   [packageRank::cranDownloads()]. If `from` is `NULL`
 #'   (the default), it is set to the package's first CRAN
-#'   release date so the full history is fetched;
+#'   release date (or `start`, whichever is later) so the
+#'   fetch covers exactly the data that will be plotted;
 #'   `cranDownloads()`'s default of "yesterday only" produces
 #'   a single-row result that cannot be plotted as a line.
+#' @param start Optional lower-bound hint (a [Date] or string
+#'   coercible to one). When `from` is `NULL`, `from` is set
+#'   to `max(first_release, start)` so that full package
+#'   history is not fetched when only a bounded range is
+#'   needed.
 #' @param ... Additional arguments passed to
 #'   [packageRank::cranDownloads()].
 #'
@@ -20,7 +26,7 @@
 #'   and `cumulative`.
 #'
 #' @keywords internal
-.fetch_cran_downloads <- function(package, unit, from = NULL, to = NULL, ...) {
+.fetch_cran_downloads <- function(package, unit, from = NULL, to = NULL, start = NULL, ...) {
   if (!requireNamespace("packageRank", quietly = TRUE)) {
     msg <- paste(
       "Package {.pkg packageRank} is required.",
@@ -31,7 +37,12 @@
   }
 
   if (is.null(from)) {
-    from <- .cran_first_release_date(package)
+    first_release <- .cran_first_release_date(package)
+    from <- if (!is.null(start)) {
+      max(first_release, as.Date(start))
+    } else {
+      first_release
+    }
   }
 
   dl <- packageRank::cranDownloads(package, from = from, to = to, ...)
