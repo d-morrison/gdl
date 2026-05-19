@@ -56,14 +56,14 @@
   # (character without a recognized format) or return NA (e.g. from
   # NA input), so handle both.
   if (!is.null(start)) {
-    start_in <- start
-    start <- tryCatch(as.Date(start), error = function(e) NULL)
-    if (is.null(start) || is.na(start)) {
+    coerced <- tryCatch(as.Date(start), error = function(e) NULL)
+    if (is.null(coerced) || is.na(coerced)) {
       cli::cli_abort(c(
         "{.arg start} could not be coerced to a Date.",
-        x = "Got {.val {start_in}}."
+        x = "Got {.val {start}}."
       ))
     }
+    start <- coerced
   }
 
   # `start` is passed in twice: here to bound the actual CRAN fetch,
