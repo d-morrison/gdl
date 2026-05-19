@@ -1,0 +1,204 @@
+# Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
+# Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
+# Deploys altdoc for Pull Requests, releases, and pushes to main branch.
+# PRs are deployed to /preview/pr<number>/
+# Main branch is deployed to /dev/ (development docs)
+# Releases are deployed to / (stable docs)
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - closed
+    # uncomment the following lines to restrict when this workflow runs:
+    # paths:
+    #   - 'man/**'
+    #   - 'altdoc/**'
+    #   - 'vignettes/**'
+    #   - '_quarto.yml'
+    #   - '.github/workflows/docs.yaml'
+    #   - 'README.md'
+    #   - 'index.qmd'
+  push:
+    branches:
+      - main
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Documentation version to deploy
+        required: true
+        default: dev
+        type: choice
+        options:
+          - dev
+          - stable
+
+name: docs
+
+env:
+    PREVIEW_BRANCH: gh-pages
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    if: ${{ !(github.event_name == 'pull_request' && github.event.action == 'closed') }}
+    timeout-minutes: 30
+    # Only restrict concurrency for non-PR jobs
+    concurrency:
+      group: docs-${{ github.event_name != 'pull_request' || github.run_id }}
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          # fetch-depth: 0 fetches all history and tags, which the version
+          # dropdown script needs to discover all release tags
+          fetch-depth: 0
+
+      - name: Set up Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          tinytex: true
+
+      - name: Set up Julia
+        uses: julia-actions/setup-julia@v2
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - name: Install R dependencies
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          needs: |
+            connect
+            website
+          extra-packages: |
+            d-morrison/altdoc@recursive-qmd-search
+            quarto-dev/quarto
+            any::sessioninfo
+            local::.
+
+      # Verify development environment is properly configured
+      - name: Verify development environment
+        shell: bash
+        run: |
+          echo "=== Development Environment Status ==="
+          export QUARTO_LOG_LEVEL=DEBUG
+          # Check R installation
+          Rscript -e 'cat("R version:", R.version.string, "\n")'
+
+          # Verify Quarto is installed and working
+          echo ""
+          echo "=== Quarto Status ==="
+          quarto --version
+          quarto check
+
+          echo ""
+          echo "Development environment setup complete!"
+
+      - name: Generate version dropdown
+        run: python3 .github/scripts/generate_version_dropdown.py
+
+      - name: Build site
+        # uncomment the next two lines to get full debugging output
+        # env:
+          # QUARTO_LOG_LEVEL: DEBUG
+        timeout-minutes: 20
+        run: |
+          # If parallel = TRUE in render_docs()
+          # future::plan(future::multicore)
+          # sessioninfo::session_info() # already done in Install R dependencies
+          altdoc::render_docs(verbose = TRUE, parallel = FALSE, freeze = FALSE)
+        shell: Rscript {0}
+
+      # If event is workflow_dispatch with stable selected, deploy to root
+      - name: '[dispatch stable] Set documentation subdirectory to root'
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.version == 'stable'
+        run: |
+          echo "subdir=" >> $GITHUB_ENV
+
+      # If event is workflow_dispatch with dev selected, deploy to /dev/
+      - name: '[dispatch dev] Set documentation subdirectory to /dev/'
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.version == 'dev'
+        run: |
+          echo "subdir=dev" >> $GITHUB_ENV
+
+      # If event is a release, deploy stable docs to root
+      - name: "[release] Set documentation subdirectory to root"
+        if: github.event_name == 'release'
+        run: |
+          echo "subdir=" >> $GITHUB_ENV
+
+      # If event is a push to main, deploy development docs to /dev/
+      - name: "[main] Set documentation subdirectory to /dev/"
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          echo "subdir=dev" >> $GITHUB_ENV
+
+      - name: Debug subdir
+        run: |
+          echo "Subdir is set to: ${{ env.subdir }}"
+
+      - name: Deploy to GitHub pages 🚀
+        if: github.event_name != 'pull_request'
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          clean-exclude: |
+            pr-preview
+            dev
+            v[0-9]*
+          branch: gh-pages # potentially different from ${{ env.PREVIEW_BRANCH }}
+          folder: docs
+          target-folder: ${{ env.subdir }}
+
+      # On release, also deploy docs to a versioned subdirectory (e.g. /v1.0.0/)
+      # so previous releases remain accessible after future releases overwrite root.
+      - name: "[release] Deploy to version subdirectory"
+        if: github.event_name == 'release'
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          clean: false
+          branch: gh-pages
+          folder: docs
+          target-folder: ${{ github.ref_name }}
+
+      - name: Deploy PR Preview
+        id: preview-step
+        if: github.event_name == 'pull_request'
+        uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: docs
+          preview-branch: ${{ env.PREVIEW_BRANCH }}
+          comment: "false"
+          wait-for-pages-deployment: false
+
+      # following https://github.com/rossjrw/pr-preview-action?tab=readme-ov-file#customise-the-sticky-comment:
+      - uses: marocchino/sticky-pull-request-comment@v2
+        if: steps.preview-step.outputs.deployment-action == 'deploy' && env.deployment_status == 'success'
+        with:
+          header: pr-preview
+          recreate: true
+          message: |
+              [PR Preview Action](https://github.com/rossjrw/pr-preview-action) ${{ steps.preview-step.outputs.action-version }}
+              :---:
+              | <p><img src="https://qr.rossjrw.com/?url=${{ steps.preview-step.outputs.preview-url }}" height="100" align="right" alt="QR code for preview link"></p> :rocket: View preview at <br> ${{ steps.preview-step.outputs.preview-url }} <br><br>
+              | <h6>Built to branch [`${{ env.PREVIEW_BRANCH }}`](${{ github.server_url }}/${{ github.repository }}/tree/${{ env.PREVIEW_BRANCH }}) at ${{ steps.preview-step.outputs.action-start-time }}. <br> Preview will be ready when the [GitHub Pages deployment](${{ github.server_url }}/${{ github.repository }}/deployments) is complete. <br><br> </h6>
+
+      - uses: marocchino/sticky-pull-request-comment@v2
+        if: steps.preview-step.outputs.deployment-action == 'remove' && env.deployment_status == 'success'
+        with:
+            header: pr-preview
+            message: |
+                [PR Preview Action](https://github.com/rossjrw/pr-preview-action) ${{ steps.preview-step.outputs.action-version }}
+                :---:
+                Preview removed because the pull request was closed.
+                ${{ steps.preview-step.outputs.action-start-time }}

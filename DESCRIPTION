@@ -27,11 +27,17 @@ Imports:
     tibble,
     tidyr
 Suggests:
+    altdoc,
+    badger,
     gh,
+    knitr,
     packageRank,
+    quarto,
+    rmarkdown,
     spelling,
     testthat (>= 3.0.0),
     vdiffr,
     withr
 Config/testthat/edition: 3
+Config/Needs/website: quarto
 Config/roxygen2/version: 8.0.0
