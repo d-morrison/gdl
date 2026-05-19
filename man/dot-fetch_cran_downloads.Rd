@@ -4,13 +4,20 @@
 \alias{.fetch_cran_downloads}
 \title{Fetch and aggregate CRAN download counts}
 \usage{
-.fetch_cran_downloads(package, unit, ...)
+.fetch_cran_downloads(package, unit, from = NULL, to = NULL, ...)
 }
 \arguments{
 \item{package}{Character; CRAN package name.}
 
 \item{unit}{Character string passed to \code{\link[=cut.Date]{cut.Date()}} for
 time aggregation (e.g. \code{"month"}, \code{"week"}).}
+
+\item{from, to}{Date range passed to
+\code{\link[packageRank:cranDownloads]{packageRank::cranDownloads()}}. If \code{from} is \code{NULL}
+(the default), it is set to the package's first CRAN
+release date so the full history is fetched;
+\code{cranDownloads()}'s default of "yesterday only" produces
+a single-row result that cannot be plotted as a line.}
 
 \item{...}{Additional arguments passed to
 \code{\link[packageRank:cranDownloads]{packageRank::cranDownloads()}}.}
