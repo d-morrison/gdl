@@ -377,7 +377,7 @@ ul.task-list li input[type="checkbox"] {
 <h1>gdl 0.0.0.9001</h1>
 <ul>
 <li>Fixed gh-pages site root returning 404 before the first stable release: dev deploys now drop a small <code>index.html</code> redirect at the root pointing to <code>/dev/</code>.</li>
-<li><code>graph_downloads()</code> examples now render output in CI doc builds (altdoc) while skipping in offline R CMD check (<code>@examplesIf interactive() || CI</code>).</li>
+<li><code>graph_downloads()</code> examples now render output in altdoc docs builds while skipping in offline R CMD check. Gated on a docs-only env var (<code>@examplesIf interactive() || nzchar(Sys.getenv("GDL_DOCS_BUILD"))</code>), which the docs workflow sets but R-CMD-check does not.</li>
 <li><code>.fetch_cran_downloads()</code> now accepts a <code>start</code> hint so only the requested date range is fetched from CRAN, avoiding a full-history download when a bounded <code>start</code> date is supplied.</li>
 </ul>
 </section>
