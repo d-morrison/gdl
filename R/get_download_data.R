@@ -68,9 +68,13 @@
     if (!inherits(coerced, "Date") ||
           length(coerced) != 1L ||
           is.na(coerced)) {
+      # Use deparse() so length-0 / length-2 inputs render readably
+      # ("character(0)", 'c("2024-01-01", "2024-02-01")') instead of
+      # cli's `{.val ...}` formatter which renders length-0 as empty
+      # ("Got .") and length-2 as a single element.
       cli::cli_abort(c(
         "{.arg start} could not be coerced to a single non-missing Date.",
-        x = "Got {.val {start}}."
+        x = "Got {deparse(start)}."
       ))
     }
     start <- coerced
