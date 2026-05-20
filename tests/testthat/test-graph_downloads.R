@@ -123,23 +123,23 @@ test_that(
 test_that(
   desc = "graph_downloads() errors when both metrics are FALSE",
   code = {
-    graph_downloads("dplyr", new = FALSE, cumulative = FALSE) |>
-      expect_error()
+    expect_error(graph_downloads("dplyr", new = FALSE, cumulative = FALSE))
   }
 )
 
 test_that(
   desc = "graph_downloads() errors on invalid start date",
   code = {
-    graph_downloads("dplyr", start = "not-a-date") |>
-      expect_error(regexp = "could not be coerced to a Date")
+    expect_error(
+      graph_downloads("dplyr", start = "not-a-date"),
+      regexp = "could not be coerced to a Date"
+    )
   }
 )
 
 test_that(
   desc = "graph_downloads() errors on invalid unit",
   code = {
-    graph_downloads("dplyr", unit = "fortnight") |>
-      expect_error()
+    expect_error(graph_downloads("dplyr", unit = "fortnight"))
   }
 )

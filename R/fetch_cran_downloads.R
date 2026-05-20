@@ -14,11 +14,12 @@
 #'   fetch covers exactly the data that will be plotted;
 #'   `cranDownloads()`'s default of "yesterday only" produces
 #'   a single-row result that cannot be plotted as a line.
-#' @param start Optional lower-bound hint (a [Date] or string
-#'   coercible to one). When `from` is `NULL`, `from` is set
-#'   to `max(first_release, start)` so that full package
-#'   history is not fetched when only a bounded range is
-#'   needed.
+#' @param start Optional lower-bound hint (a [Date]; callers
+#'   that accept strings — e.g. [.get_download_data()] — are
+#'   responsible for coercing/validating before passing here).
+#'   When `from` is `NULL`, `from` is set to
+#'   `max(first_release, start)` so that full package history
+#'   is not fetched when only a bounded range is needed.
 #' @param ... Additional arguments passed to
 #'   [packageRank::cranDownloads()].
 #'

@@ -20,11 +20,12 @@ fetch covers exactly the data that will be plotted;
 \code{cranDownloads()}'s default of "yesterday only" produces
 a single-row result that cannot be plotted as a line.}
 
-\item{start}{Optional lower-bound hint (a \link{Date} or string
-coercible to one). When \code{from} is \code{NULL}, \code{from} is set
-to \code{max(first_release, start)} so that full package
-history is not fetched when only a bounded range is
-needed.}
+\item{start}{Optional lower-bound hint (a \link{Date}; callers
+that accept strings — e.g. \code{\link[=.get_download_data]{.get_download_data()}} — are
+responsible for coercing/validating before passing here).
+When \code{from} is \code{NULL}, \code{from} is set to
+\code{max(first_release, start)} so that full package history
+is not fetched when only a bounded range is needed.}
 
 \item{...}{Additional arguments passed to
 \code{\link[packageRank:cranDownloads]{packageRank::cranDownloads()}}.}
