@@ -4,13 +4,32 @@
 \alias{.fetch_cran_downloads}
 \title{Fetch and aggregate CRAN download counts}
 \usage{
-.fetch_cran_downloads(package, unit, ...)
+.fetch_cran_downloads(package, unit, from = NULL, to = NULL, start = NULL, ...)
 }
 \arguments{
 \item{package}{Character; CRAN package name.}
 
 \item{unit}{Character string passed to \code{\link[=cut.Date]{cut.Date()}} for
 time aggregation (e.g. \code{"month"}, \code{"week"}).}
+
+\item{from, to}{Date range passed to
+\code{\link[packageRank:cranDownloads]{packageRank::cranDownloads()}}. If \code{from} is \code{NULL}
+(the default), it is set to the package's first CRAN
+release date (or \code{start}, whichever is later) so the
+fetch covers exactly the data that will be plotted;
+\code{cranDownloads()}'s default of "yesterday only" produces
+a single-row result that cannot be plotted as a line.}
+
+\item{start}{Optional lower-bound hint (a \link{Date}; callers
+that accept strings — e.g. \code{\link[=.get_download_data]{.get_download_data()}} — are
+responsible for coercing/validating before passing here).
+When \code{from} is \code{NULL}, \code{from} is set to
+\code{max(first_release, start)} so that full package history
+is not fetched when only a bounded range is needed.
+Ignored when \code{from} is supplied explicitly — the
+\code{is.null(from)} guard skips the \code{start} logic entirely,
+and rows in \verb{[from, start)} would be fetched then
+discarded by the downstream post-filter.}
 
 \item{...}{Additional arguments passed to
 \code{\link[packageRank:cranDownloads]{packageRank::cranDownloads()}}.}

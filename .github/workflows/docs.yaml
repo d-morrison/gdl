@@ -110,7 +110,11 @@ jobs:
 
       - name: Build site
         # uncomment the next two lines to get full debugging output
-        # env:
+        env:
+          # Signal to roxygen `@examplesIf` that this is a docs build:
+          # examples that hit live CRAN/GitHub render here but skip in
+          # R-CMD-check (which doesn't set this var).
+          GDL_DOCS_BUILD: "true"
           # QUARTO_LOG_LEVEL: DEBUG
         timeout-minutes: 20
         run: |
@@ -170,6 +174,79 @@ jobs:
           branch: gh-pages
           folder: docs
           target-folder: ${{ github.ref_name }}
+
+      # Pre-release only: when there are no releases yet, the site root
+      # has no stable docs and returns 404. Detect that and gate the
+      # root-redirect steps below so we never overwrite stable docs.
+      - name: "[dev] Check for pre-release state"
+        id: pre_release
+        if: github.event_name != 'pull_request' && env.subdir == 'dev'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # On any gh failure (rate limit, transient network, auth
+          # blip) fall back to "1" — i.e. assume a release exists, so
+          # `is_pre_release=false`, so the redirect step is SKIPPED.
+          # This is the safe default: the dangerous case is writing
+          # the dev redirect over stable root docs after the first
+          # release. Worst case with this fallback is that the root
+          # returns 404 for one deploy before the first release; that
+          # corrects itself on the next successful run. Defaulting to
+          # "0" instead would risk clobbering stable docs, which is
+          # invisible to users until they hit the redirect.
+          count=$(gh release list --repo "${GITHUB_REPOSITORY}" --limit 1 \
+            --json tagName --jq 'length' 2>/dev/null || echo "1")
+          echo "Release count: $count"
+          if [ "$count" = "0" ]; then
+            echo "is_pre_release=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_pre_release=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # When deploying dev docs *before the first release*, drop a redirect
+      # at the site root so https://<owner>.github.io/<repo>/ resolves to
+      # /dev/. After the first release publishes stable docs at root, we
+      # stop writing this redirect so we don't clobber stable docs.
+      - name: "[dev] Build root redirect to /dev/"
+        if: steps.pre_release.outputs.is_pre_release == 'true'
+        run: |
+          mkdir -p root-redirect
+          # Write each line explicitly via printf so the resulting
+          # index.html has no leading whitespace. (A standard heredoc
+          # would preserve the YAML-block indent on every line —
+          # functionally harmless because browsers ignore it, but
+          # cosmetically ugly. `<<-EOF` only strips tabs, and embedding
+          # tabs inside a YAML run block tends to get mangled by
+          # editors, so printf is the most portable option.)
+          printf '%s\n' \
+            '<!doctype html>' \
+            '<html lang="en">' \
+            '<head>' \
+            '  <meta charset="utf-8">' \
+            '  <title>Redirecting to development docs</title>' \
+            '  <meta http-equiv="refresh" content="0; url=./dev/">' \
+            '  <link rel="canonical" href="./dev/">' \
+            '</head>' \
+            '<body>' \
+            '  Redirecting to <a href="./dev/">./dev/</a>…' \
+            '</body>' \
+            '</html>' \
+            > root-redirect/index.html
+
+      # clean: false here is intentional and asymmetric with the deploy
+      # above (which uses clean: true + clean-exclude). This step writes
+      # only `/index.html` and must NOT wipe `dev/`, `pr-preview/`, or
+      # `v*/` trees that the previous step (or PR previews) just wrote.
+      # The pre_release gate ensures we don't run this after a stable
+      # release; the first release deploy overwrites this redirect.
+      - name: "[dev] Deploy root redirect"
+        if: steps.pre_release.outputs.is_pre_release == 'true'
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          clean: false
+          branch: gh-pages
+          folder: root-redirect
+          target-folder: ""
 
       - name: Deploy PR Preview
         id: preview-step

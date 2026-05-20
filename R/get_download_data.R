@@ -48,7 +48,43 @@
 
   unit <- unit |> rlang::arg_match()
 
-  cran_data <- .fetch_cran_downloads(package, unit, ...)
+  # Coerce + validate `start` once here so both .fetch_cran_downloads()
+  # (which uses it as a fetch lower-bound) and .prepare_download_data()
+  # (which uses it to post-filter the combined CRAN+GitHub frame) see
+  # the same validated Date. Without this, an invalid `start` silently
+  # filters every row out downstream. Failure modes covered:
+  # - as.Date(<unparseable string>) returns NA with a warning. Wrap
+  #   with suppressWarnings() so the user gets the clean cli_abort
+  #   message, not the noisy base-R warning before it.
+  # - as.Date() on weird inputs (functions, lists with no method) can
+  #   error; tryCatch returns NULL so we fall into the abort below.
+  # - length-0 (character(0), empty Date) and length-2+ vectors would
+  #   crash the is.na() in the if() condition or silently pick the
+  #   first element. Reject anything that isn't a single Date.
+  if (!is.null(start)) {
+    coerced <- suppressWarnings(
+      tryCatch(as.Date(start), error = function(e) NULL)
+    )
+    if (!inherits(coerced, "Date") ||
+          length(coerced) != 1L ||
+          is.na(coerced)) {
+      # Use deparse() so length-0 / length-2 inputs render readably
+      # ("character(0)", 'c("2024-01-01", "2024-02-01")') instead of
+      # cli's `{.val ...}` formatter which renders length-0 as empty
+      # ("Got .") and length-2 as a single element.
+      cli::cli_abort(c(
+        "{.arg start} could not be coerced to a single non-missing Date.",
+        x = "Got {deparse(start)}."
+      ))
+    }
+    start <- coerced
+  }
+
+  # `start` is passed in twice: here to bound the actual CRAN fetch,
+  # and in .prepare_download_data() to post-filter both sources. The
+  # post-filter is a no-op for CRAN once we pass `start` here, but
+  # still filters the GitHub side (which fetches all releases).
+  cran_data <- .fetch_cran_downloads(package, unit, start = start, ...)
   github_data <- if (!is.null(github_repo)) {
     .fetch_github_downloads(github_repo, unit)
   }
