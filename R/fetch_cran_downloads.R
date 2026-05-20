@@ -20,6 +20,10 @@
 #'   When `from` is `NULL`, `from` is set to
 #'   `max(first_release, start)` so that full package history
 #'   is not fetched when only a bounded range is needed.
+#'   Ignored when `from` is supplied explicitly — the
+#'   `is.null(from)` guard skips the `start` logic entirely,
+#'   and rows in `[from, start)` would be fetched then
+#'   discarded by the downstream post-filter.
 #' @param ... Additional arguments passed to
 #'   [packageRank::cranDownloads()].
 #'

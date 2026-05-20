@@ -140,6 +140,9 @@ test_that(
 test_that(
   desc = "graph_downloads() errors on invalid unit",
   code = {
-    expect_error(graph_downloads("dplyr", unit = "fortnight"))
+    expect_error(
+      graph_downloads("dplyr", unit = "fortnight"),
+      regexp = "fortnight"
+    )
   }
 )

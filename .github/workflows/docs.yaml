@@ -184,8 +184,13 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # Fall back to "0" (pre-release = true) on any gh failure
+          # (rate limit, transient network, auth blip). Default GHA
+          # `set -e` would otherwise abort the deploy entirely; writing
+          # the redirect one extra time is strictly safer than skipping
+          # the main docs deploy.
           count=$(gh release list --repo "${GITHUB_REPOSITORY}" --limit 1 \
-            --json tagName --jq 'length')
+            --json tagName --jq 'length' 2>/dev/null || echo "0")
           echo "Release count: $count"
           if [ "$count" = "0" ]; then
             echo "is_pre_release=true" >> "$GITHUB_OUTPUT"
@@ -201,20 +206,27 @@ jobs:
         if: steps.pre_release.outputs.is_pre_release == 'true'
         run: |
           mkdir -p root-redirect
-          cat > root-redirect/index.html <<'EOF'
-          <!doctype html>
-          <html lang="en">
-          <head>
-            <meta charset="utf-8">
-            <title>Redirecting to development docs</title>
-            <meta http-equiv="refresh" content="0; url=./dev/">
-            <link rel="canonical" href="./dev/">
-          </head>
-          <body>
-            Redirecting to <a href="./dev/">./dev/</a>…
-          </body>
-          </html>
-          EOF
+          # Write each line explicitly via printf so the resulting
+          # index.html has no leading whitespace. (A standard heredoc
+          # would preserve the YAML-block indent on every line —
+          # functionally harmless because browsers ignore it, but
+          # cosmetically ugly. `<<-EOF` only strips tabs, and embedding
+          # tabs inside a YAML run block tends to get mangled by
+          # editors, so printf is the most portable option.)
+          printf '%s\n' \
+            '<!doctype html>' \
+            '<html lang="en">' \
+            '<head>' \
+            '  <meta charset="utf-8">' \
+            '  <title>Redirecting to development docs</title>' \
+            '  <meta http-equiv="refresh" content="0; url=./dev/">' \
+            '  <link rel="canonical" href="./dev/">' \
+            '</head>' \
+            '<body>' \
+            '  Redirecting to <a href="./dev/">./dev/</a>…' \
+            '</body>' \
+            '</html>' \
+            > root-redirect/index.html
 
       # clean: false here is intentional and asymmetric with the deploy
       # above (which uses clean: true + clean-exclude). This step writes
