@@ -17,7 +17,7 @@ website:
     right:
       - text: Versions
         menu:
-          - text: "0.0.0.9000 (dev)"
+          - text: "0.0.0.9001 (dev)"
             href: https://d-morrison.github.io/gdl/dev/
       - icon: github
         href: $ALTDOC_PACKAGE_URL_GITHUB

@@ -271,7 +271,7 @@ ul.task-list li input[type="checkbox"] {
     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-versions">    
         <li>
     <a class="dropdown-item" href="https://d-morrison.github.io/gdl/dev/">
- <span class="dropdown-text">0.0.0.9000 (dev)</span></a>
+ <span class="dropdown-text">0.0.0.9001 (dev)</span></a>
   </li>  
     </ul>
   </li>
@@ -361,7 +361,8 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#gdl-0.0.0.9000" id="toc-gdl-0.0.0.9000" class="nav-link active" data-scroll-target="#gdl-0.0.0.9000">gdl 0.0.0.9000</a></li>
+  <li><a href="#gdl-0.0.0.9001" id="toc-gdl-0.0.0.9001" class="nav-link active" data-scroll-target="#gdl-0.0.0.9001">gdl 0.0.0.9001</a></li>
+  <li><a href="#gdl-0.0.0.9000" id="toc-gdl-0.0.0.9000" class="nav-link" data-scroll-target="#gdl-0.0.0.9000">gdl 0.0.0.9000</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/d-morrison/gdl/edit/main/NEWS.md" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/d-morrison/gdl/blob/main/NEWS.md" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/d-morrison/gdl/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
@@ -372,6 +373,14 @@ ul.task-list li input[type="checkbox"] {
 
 
 
+<section id="gdl-0.0.0.9001" class="level1">
+<h1>gdl 0.0.0.9001</h1>
+<ul>
+<li>Fixed gh-pages site root returning 404 before the first stable release: dev deploys now drop a small <code>index.html</code> redirect at the root pointing to <code>/dev/</code>.</li>
+<li><code>graph_downloads()</code> examples now render output in altdoc docs builds while skipping in offline R CMD check. Gated on a docs-only env var (<code>@examplesIf interactive() || nzchar(Sys.getenv("GDL_DOCS_BUILD"))</code>), which the docs workflow sets but R-CMD-check does not.</li>
+<li><code>.fetch_cran_downloads()</code> now accepts a <code>start</code> hint so only the requested date range is fetched from CRAN, avoiding a full-history download when a bounded <code>start</code> date is supplied.</li>
+</ul>
+</section>
 <section id="gdl-0.0.0.9000" class="level1">
 <h1>gdl 0.0.0.9000</h1>
 <ul>
