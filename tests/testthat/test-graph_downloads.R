@@ -123,7 +123,10 @@ test_that(
 test_that(
   desc = "graph_downloads() errors when both metrics are FALSE",
   code = {
-    expect_error(graph_downloads("dplyr", new = FALSE, cumulative = FALSE))
+    expect_error(
+      graph_downloads("dplyr", new = FALSE, cumulative = FALSE),
+      regexp = "At least one"
+    )
   }
 )
 
