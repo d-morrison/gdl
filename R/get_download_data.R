@@ -52,14 +52,24 @@
   # (which uses it as a fetch lower-bound) and .prepare_download_data()
   # (which uses it to post-filter the combined CRAN+GitHub frame) see
   # the same validated Date. Without this, an invalid `start` silently
-  # filters every row out downstream. as.Date() can either error
-  # (character without a recognized format) or return NA (e.g. from
-  # NA input), so handle both.
+  # filters every row out downstream. Failure modes covered:
+  # - as.Date(<unparseable string>) returns NA with a warning. Wrap
+  #   with suppressWarnings() so the user gets the clean cli_abort
+  #   message, not the noisy base-R warning before it.
+  # - as.Date() on weird inputs (functions, lists with no method) can
+  #   error; tryCatch returns NULL so we fall into the abort below.
+  # - length-0 (character(0), empty Date) and length-2+ vectors would
+  #   crash the is.na() in the if() condition or silently pick the
+  #   first element. Reject anything that isn't a single Date.
   if (!is.null(start)) {
-    coerced <- tryCatch(as.Date(start), error = function(e) NULL)
-    if (is.null(coerced) || is.na(coerced)) {
+    coerced <- suppressWarnings(
+      tryCatch(as.Date(start), error = function(e) NULL)
+    )
+    if (!inherits(coerced, "Date") ||
+          length(coerced) != 1L ||
+          is.na(coerced)) {
       cli::cli_abort(c(
-        "{.arg start} could not be coerced to a Date.",
+        "{.arg start} could not be coerced to a single non-missing Date.",
         x = "Got {.val {start}}."
       ))
     }

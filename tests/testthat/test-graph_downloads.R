@@ -135,7 +135,27 @@ test_that(
   code = {
     expect_error(
       graph_downloads("dplyr", start = "not-a-date"),
-      regexp = "could not be coerced to a Date"
+      regexp = "could not be coerced"
+    )
+  }
+)
+
+test_that(
+  desc = "graph_downloads() errors on length-0 start",
+  code = {
+    expect_error(
+      graph_downloads("dplyr", start = character(0)),
+      regexp = "could not be coerced"
+    )
+  }
+)
+
+test_that(
+  desc = "graph_downloads() errors on length-2 start",
+  code = {
+    expect_error(
+      graph_downloads("dplyr", start = c("2024-01-01", "2024-02-01")),
+      regexp = "could not be coerced"
     )
   }
 )

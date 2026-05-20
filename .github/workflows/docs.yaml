@@ -184,13 +184,18 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Fall back to "0" (pre-release = true) on any gh failure
-          # (rate limit, transient network, auth blip). Default GHA
-          # `set -e` would otherwise abort the deploy entirely; writing
-          # the redirect one extra time is strictly safer than skipping
-          # the main docs deploy.
+          # On any gh failure (rate limit, transient network, auth
+          # blip) fall back to "1" — i.e. assume a release exists, so
+          # `is_pre_release=false`, so the redirect step is SKIPPED.
+          # This is the safe default: the dangerous case is writing
+          # the dev redirect over stable root docs after the first
+          # release. Worst case with this fallback is that the root
+          # returns 404 for one deploy before the first release; that
+          # corrects itself on the next successful run. Defaulting to
+          # "0" instead would risk clobbering stable docs, which is
+          # invisible to users until they hit the redirect.
           count=$(gh release list --repo "${GITHUB_REPOSITORY}" --limit 1 \
-            --json tagName --jq 'length' 2>/dev/null || echo "0")
+            --json tagName --jq 'length' 2>/dev/null || echo "1")
           echo "Release count: $count"
           if [ "$count" = "0" ]; then
             echo "is_pre_release=true" >> "$GITHUB_OUTPUT"
