@@ -13,6 +13,8 @@ allowed-tools:
   - Read
   - Write
   - Edit
+  - Glob
+  - Grep
 ---
 
 # reprexes
@@ -65,8 +67,9 @@ but nothing more.
    - the minimal code that triggers the phenomenon, with a comment marking
      where it goes wrong.
 3. **Run it in a clean session** and confirm it reproduces. For R, run with
-   `Rscript /tmp/reprex.R` (a fresh process — no stale `globalenv()` state
-   masking or faking the bug). For a Quarto page, render just that file:
+   `Rscript /tmp/reprex.R` (or the `tempfile()` path from step 2 on a non-Unix
+   machine) — a fresh process, no stale `globalenv()` state masking or faking
+   the bug. For a Quarto page, render just that file:
    `quarto render /tmp/reprex.qmd --to html`, not the whole site.
 4. **Minimize.** Remove pieces until the phenomenon disappears — the last
    removal that "fixes" it implicates that piece. (Or build up from nothing
