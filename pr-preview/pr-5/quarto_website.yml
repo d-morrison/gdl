@@ -1,0 +1,61 @@
+project:
+  type: website
+  output-dir: ../docs/
+  render:
+    - "*.qmd"
+    - "*.md"
+    - "!README.md"
+    - "!index.md"
+
+website:
+  title: "$ALTDOC_PACKAGE_NAME"
+  repo-url: https://github.com/d-morrison/gdl
+  repo-actions: [edit, source, issue]
+  navbar:
+    search: true
+    pinned: false
+    right:
+      - text: Versions
+        menu:
+          - text: "0.0.0.9001 (dev)"
+            href: https://d-morrison.github.io/gdl/dev/
+      - icon: github
+        href: $ALTDOC_PACKAGE_URL_GITHUB
+        aria-label: $ALTDOC_PACKAGE_NAME GitHub
+    left:
+      - text: Documentation
+        file: man/gdl-package.qmd
+  sidebar:
+    collapse-level: 1
+    contents:
+      - text: Home
+        file: index.qmd
+        style: floating
+      - section: $ALTDOC_MAN_BLOCK
+        style: floating
+      - text: News
+        file: NEWS.md
+      - text: License
+        file: LICENSE.md
+      - text: Code of conduct
+        file: CODE_OF_CONDUCT.md
+      - text: Contributing
+        file: CONTRIBUTING.md
+
+format:
+  html:
+    code-link: true
+    theme:
+      light: default
+      dark: darkly
+    css: styles.css
+    number-sections: false
+    code-fold: show
+    echo: true
+    code-copy: true
+    code-overflow: scroll
+    title-block-style: none
+    toc: true
+    grid:
+      sidebar-width: 340px
+      margin-width: 340px
