@@ -1,6 +1,6 @@
 Package: gdl
 Title: Graph Package Download Counts
-Version: 0.0.0.9001
+Version: 0.0.0.9002
 Authors@R:
     person("Douglas Ezra", "Morrison", , "demorrison@ucdavis.edu", role = c("aut", "cre"))
 Description: Plot new and cumulative download counts for an R package

@@ -1,3 +1,7 @@
+# gdl 0.0.0.9002
+
+* Added `AGENTS.md` and `.claude/settings.json` so AI coding agents load the maintainer's shared rules from [Morrison-Lab/ai-config](https://github.com/Morrison-Lab/ai-config); both are excluded from the package build.
+
 # gdl 0.0.0.9001
 
 * Fixed gh-pages site root returning 404 before the first stable release: dev
